@@ -1069,7 +1069,9 @@ ONNX_MS_OPERATOR_SET_SCHEMA(Col2Im, 1,
                                 "The shape of the block to apply on the input."
                                 "This is a 1-dim tensor of size of at least 2, containing the value [H_block, W_block] "
                                 " for a 2-D image or [dim_b1, dim_b2, ..., dim_bN] for a N-D block."
-                                "Dilations, pads and strides are applied to block_shape under the hood.",
+                                "Dilations, pads and strides are applied to block_shape under the hood."
+                                "The kernel window start at the top-left of the block and slides to the right and down,"
+                                "similarly to how Convolution kernels do.",
                                 "tensor(int64)",
                                 OpSchema::Single,
                                 true,
