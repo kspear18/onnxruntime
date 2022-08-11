@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!--Protobuf classes. These feature protobuf internals that change from version to version
+      and must be updated on protobuf version change -->
+  <Type Name="google::protobuf::RepeatedField&lt;*&gt;">
+    <DisplayString>{{ size={current_size_} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">current_size_</Item>
+      <Item Name="[capacity]" ExcludeView="simple">total_size_</Item>
+      <Item Name="[arena]" Condition="total_size_ == 0 &amp;&amp; arena_or_elements_" ExcludeView="simple">arena_or_elements_</Item>
+      <ArrayItems Condition="total_size_ != 0">
+        <Size>current_size_</Size>
+        <ValuePointer>($T1*)arena_or_elements_</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="google::protobuf::RepeatedPtrField&lt;*&gt;">
+    <DisplayString>{{ size={current_size_} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">current_size_</Item>
+      <Item Name="[capacity]" ExcludeView="simple">total_size_</Item>
+      <Item Name="[arena]" Condition="arena_" ExcludeView="simple">arena_</Item>
+      <ArrayItems Condition="rep_ != 0">
+        <Size>current_size_</Size>
+        <ValuePointer>($T1**)rep_->elements</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  
+  <Type Name="google::protobuf::internal::TaggedPtr&lt;*&gt;">
+    <DisplayString>{{ {*($T1*)ptr_} }}</DisplayString>
+    <Expand>
+    </Expand>
+  </Type>
+
+  <!--ONNX Specific protobuf classes-->
+  <Type Name="onnx::TensorShapeProto_Dimension">
+    <DisplayString Condition="*_oneof_case_ == 0">empty</DisplayString>
+    <DisplayString Condition="*_oneof_case_ == kDimValue">{{ v = {value_.dim_value_} }}</DisplayString>
+    <DisplayString Condition="*_oneof_case_ == kDimParam">{{ p = {value_.dim_param_.tagged_ptr_} }}</DisplayString>
+    <Expand>
+    </Expand>
+  </Type>
+  <Type Name="onnx::TensorShapeProto">
+    <DisplayString>{{ size={ dim_.current_size_ } }}</DisplayString>
+    <Expand>
+      <Item Name="[dims]" ExcludeView="simple">dim_</Item>
+    </Expand>
+  </Type>
+  <!--Type Protos-->
+  <Type Name="onnx::TypeProto_Tensor">
+    <DisplayString>{{ data_type={ (TensorProto_DataType)elem_type_ } }}</DisplayString>
+    <Expand>
+      <Item Name="[shape]" ExcludeView="simple">shape_</Item>
+    </Expand>
+  </Type>
+  <Type Name="onnx::TypeProto">
+    <DisplayString>{{ proto_type={ (ValueCase)*_oneof_case_ } }}</DisplayString>
+    <Expand>
+      <Item Name="[TypeProto_Tensor]" Condition="*_oneof_case_ == 1" ExcludeView="simple">value_.tensor_type_</Item>
+      <Item Name="[proto_type]" ExcludeView="simple">(ValueCase)*_oneof_case_</Item>
+      <Item Name="[denotation]" ExcludeView="simple">denotation_</Item>
+    </Expand>
+  </Type>
+  
+   <!--Protos-->
+  <Type Name="onnx::TensorProto">
+    <Intrinsic Name="has_raw_data" Expression="(_has_bits_.has_bits_[0] &amp; 0x00000002u) != 0" />
+    <Intrinsic Name="has_data_location" Expression="((_has_bits_.has_bits_[0] &amp; 0x00000020u) != 0)" />
+    <DisplayString>{{ name={name_.tagged_ptr_}, data_type={ (TensorProto_DataType)data_type_ } }}</DisplayString>
+    <Expand>
+      <Item Name="[name]" ExcludeView="simple">name_.tagged_ptr_</Item>
+      <Item Name="[data_type]" ExcludeView="simple">(TensorProto_DataType)data_type_</Item>
+      <Item Name="[shape]" ExcludeView="simple">dims_</Item>
+      <Item Name="[float_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_FLOAT &amp;&amp; !has_raw_data()">float_data_</Item>
+      <Item Name="[bool_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_BOOL &amp;&amp; !has_raw_data()">int32_data_</Item>
+      <Item Name="[int8_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_INT8 &amp;&amp; !has_raw_data()">int32_data_</Item>
+      <Item Name="[uint8_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_UINT8 &amp;&amp; !has_raw_data()">int32_data_</Item>
+      <Item Name="[int32_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_INT32 &amp;&amp; !has_raw_data()">int32_data_</Item>
+      <Item Name="[uint32_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_UINT32 &amp;&amp; !has_raw_data()">int64_data_</Item>
+      <Item Name="[int64_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_INT64 &amp;&amp; !has_raw_data()">int64_data_</Item>
+      <Item Name="[uint64_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_UINT64 &amp;&amp; !has_raw_data()">uint64_data_</Item>
+      <Item Name="[double_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_DOUBLE &amp;&amp; !has_raw_data()">double_data_</Item>
+      <Item Name="[string_data]" ExcludeView="simple" Condition="data_type_ == TensorProto_DataType_STRING &amp;&amp; !has_raw_data()">string_data_</Item>
+      <Item Name="[raw_data]" ExcludeView="simple" Condition="has_raw_data()">(std::string*)(raw_data_.tagged_ptr_.ptr_)</Item>
+      <Item Name="[data_location]" ExcludeView="simple" Condition="has_data_location()">(TensorProto_DataLocation) data_location_</Item>
+      <Item Name="[has_raw_data]" ExcludeView="simple">has_raw_data()</Item>
+      <Item Name="[has_data_location]" ExcludeView="simple">has_data_location()</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>
